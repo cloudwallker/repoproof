@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="910" viewBox="0 0 720 910" role="img" aria-labelledby="title desc">
+  <title id="title">RepoProof: historical results and current file state</title>
+  <desc id="desc">Workflow illustration based on the included demo. Run an explicit test with Git snapshots, modify tracked app.mjs, then verify without rerunning the command. Historical execution stays passed while freshness becomes changed. A declared-done task linked to the check needs recheck.</desc>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#62728b"/></marker></defs>
+  <rect width="720" height="910" rx="24" fill="#f3f6fb"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#17233a">
+    <text x="36" y="56" font-size="35" font-weight="700">Record. Change. Verify.</text>
+    <text x="36" y="92" font-size="23" fill="#52627a">A workflow illustration, not a screenshot</text>
+    <rect x="36" y="121" width="648" height="148" rx="16" fill="#fff" stroke="#cad5e5"/>
+    <circle cx="73" cy="160" r="21" fill="#234ea1"/>
+    <text x="73" y="169" text-anchor="middle" font-size="26" font-weight="700" fill="#fff">1</text>
+    <text x="109" y="169" font-size="29" font-weight="700">Run an explicit check</text>
+    <text x="60" y="212" font-family="Consolas, monospace" font-size="26">run --check tests -- node --test</text>
+    <text x="60" y="247" font-size="23" fill="#52627a">Save result + before/after Git snapshots</text>
+    <path d="M360 275 V302" stroke="#62728b" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="36" y="313" width="648" height="111" rx="16" fill="#fff" stroke="#cad5e5"/>
+    <circle cx="73" cy="351" r="21" fill="#234ea1"/>
+    <text x="73" y="360" text-anchor="middle" font-size="26" font-weight="700" fill="#fff">2</text>
+    <text x="109" y="360" font-size="29" font-weight="700">Edit a tracked file</text>
+    <text x="60" y="401" font-family="Consolas, monospace" font-size="26">app.mjs: answer = 42 → 43</text>
+    <path d="M360 431 V458" stroke="#62728b" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="36" y="469" width="648" height="111" rx="16" fill="#fff" stroke="#cad5e5"/>
+    <circle cx="73" cy="507" r="21" fill="#234ea1"/>
+    <text x="73" y="516" text-anchor="middle" font-size="26" font-weight="700" fill="#fff">3</text>
+    <text x="109" y="516" font-size="29" font-weight="700">Verify current snapshots</text>
+    <text x="60" y="557" font-size="23" fill="#52627a">Read-only comparison; no test command runs</text>
+    <path d="M360 587 V614" stroke="#62728b" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="36" y="625" width="312" height="120" rx="16" fill="#e7f4ec" stroke="#81b69a"/>
+    <text x="56" y="661" font-size="23" fill="#2b6544">Historical execution</text>
+    <text x="56" y="707" font-family="Consolas, monospace" font-size="35" font-weight="700" fill="#1c6b42">passed</text>
+    <rect x="372" y="625" width="312" height="120" rx="16" fill="#fff1d8" stroke="#d6af60"/>
+    <text x="392" y="661" font-size="23" fill="#765614">Current freshness</text>
+    <text x="392" y="707" font-family="Consolas, monospace" font-size="35" font-weight="700" fill="#875d00">changed</text>
+    <rect x="36" y="769" width="648" height="110" rx="16" fill="#e8eefb" stroke="#b5c5e8"/>
+    <text x="60" y="807" font-size="25" font-weight="700">Handoff brief: needs_recheck</text>
+    <text x="60" y="844" font-size="23" fill="#52627a">For a declared-done task linked to this check</text>
+  </g>
+</svg>

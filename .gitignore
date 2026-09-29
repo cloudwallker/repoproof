@@ -1,0 +1,20 @@
+.repoproof/
+.superpowers/
+.npm-cache/
+.test-work/
+node_modules/
+dist/
+artifacts/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+
+# Local planning, publication work, and audit output
+/docs/superpowers/
+/.github-publish-work/
+/.github-publish-audit/
+/.publish-work/
+/.publish-audit/
+*.tgz

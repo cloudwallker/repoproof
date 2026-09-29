@@ -1,0 +1,32 @@
+{
+  "name": "repoproof",
+  "version": "0.1.0",
+  "description": "Local Git check receipts and stale-evidence handoff briefs | 本地 Git 检查收据与过期证据交接简报",
+  "type": "module",
+  "engines": {
+    "node": ">=24.12.0"
+  },
+  "bin": {
+    "repoproof": "bin/repoproof.mjs"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "demo": "node scripts/demo.mjs",
+    "prepack": "node scripts/build.mjs",
+    "smoke:package": "node scripts/smoke-package.mjs"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "README.md",
+    "README_ZH.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "docs/usage.md",
+    "docs/VALIDATION.md",
+    "docs/images",
+    "examples"
+  ],
+  "license": "MIT"
+}

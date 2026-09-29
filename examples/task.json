@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "goal": "修复应用并交接可以追溯的检查记录 / Fix the app and hand off recorded checks",
+  "checks": [
+    { "id": "tests", "title": "自动化测试 / Automated tests" },
+    { "id": "review", "title": "人工审查 / Human review" }
+  ],
+  "tasks": [
+    { "id": "fix", "title": "修复应用 / Fix the app", "status": "done", "checks": ["tests"] },
+    { "id": "notes", "title": "整理说明 / Write notes", "status": "done", "checks": [], "note": "这项只有自述完成 / Self-reported only" },
+    { "id": "review", "title": "审查结果 / Review the result", "status": "blocked", "checks": ["review"], "note": "等待审查 / Awaiting review" },
+    { "id": "next", "title": "下一步迭代 / Next iteration", "status": "todo", "checks": [] }
+  ]
+}
