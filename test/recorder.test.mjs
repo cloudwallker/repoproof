@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, readdir, rm, symlink, mkdir, access } from 'node:fs/promises';
+import { readFile, readdir, rm, symlink, mkdir, access, realpath } from 'node:fs/promises';
 import { join, dirname, resolve, relative, isAbsolute } from 'node:path';
 import { tmpdir } from 'node:os';
 import childProcess, { spawn } from 'node:child_process';
@@ -17,8 +17,8 @@ async function fixture(t, files = { 'tracked.txt': 'initial\n' }) {
   return repo;
 }
 async function cleanup(directory) {
-  const base = resolve(tmpdir());
-  const target = resolve(directory);
+  const base = await realpath(tmpdir());
+  const target = await realpath(directory);
   const rel = relative(base, target);
   assert.ok(rel.startsWith('repoproof-tests-') && !rel.includes('..') && !isAbsolute(rel), 'cleanup must stay inside its isolated temporary fixture');
   for (const name of ['descendant.pid', 'parent.pid']) {

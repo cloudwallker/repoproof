@@ -67,3 +67,26 @@ test('redactCommand masks AWS secret-access-key and session-token flags', () => 
   assert.ok(!module.redactCommand(command).join(' ').includes('FAKE_'));
   assert.equal(command[2], 'FAKE_AWS_SECRET_VALUE');
 });
+
+
+test('redactText processes bounded ordinary and near-match output without runaway backtracking', () => {
+  const previews = [
+    'e'.repeat(65536),
+    'e.'.repeat(32768),
+    'e'.repeat(65536) + ':',
+    'e'.repeat(65536) + '://',
+    'https://' + 'a:'.repeat(32768),
+  ];
+  for (const input of previews) {
+    const started = performance.now();
+    assert.equal(module.redactText(input), input);
+    assert.ok(performance.now() - started < 2000, 'a bounded preview must not trigger runaway regex backtracking');
+  }
+});
+
+test('redactText preserves URL and credential prefixes while masking their values', () => {
+  assert.equal(module.redactText('123https://fake-user:FAKE_URL_PASSWORD@example.invalid/path'), '123https://[REDACTED]@example.invalid/path');
+  for (const key of ['prefixpassword', 'db-client-secret', 'AWS_SECRET_ACCESS_KEY']) {
+    assert.equal(module.redactText(key + '=FAKE_VALUE'), key + '=[REDACTED]');
+  }
+});

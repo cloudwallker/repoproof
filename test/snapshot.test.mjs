@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, symlink, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, symlink, mkdtemp, writeFile, realpath } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
@@ -18,6 +18,28 @@ test('repository resolution normalizes subdirectories and rejects non-Git direct
   assert.equal(resolveRepoRoot(join(repo.dir, 'nested')), repo.dir);
   const nonRepo = await mkdtemp(join(tmpdir(), 'repoproof-tests-empty-'));
   assert.throws(() => resolveRepoRoot(nonRepo), /Git|repository/i);
+});
+
+test('repository fixtures normalize an aliased temporary directory', async () => {
+  const base = await realpath(await mkdtemp(join(tmpdir(), 'repoproof-tests-alias-')));
+  const actual = join(base, 'actual');
+  const alias = join(base, 'alias');
+  await mkdir(actual);
+  await symlink(actual, alias, process.platform === 'win32' ? 'junction' : 'dir');
+  const names = ['TEMP', 'TMP', 'TMPDIR'];
+  const previous = names.map(name => process.env[name]);
+  let repo;
+  try {
+    for (const name of names) process.env[name] = alias;
+    repo = await createRepo({ 'a.txt': 'a' });
+  } finally {
+    names.forEach((name, index) => {
+      if (previous[index] === undefined) delete process.env[name];
+      else process.env[name] = previous[index];
+    });
+  }
+  assert.equal(repo.dir, await realpath(repo.dir));
+  assert.equal(resolveRepoRoot(repo.dir), repo.dir);
 });
 test('NUL-delimited Git paths preserve Unicode, spaces, and distinct filenames', async () => {
   assert.equal(typeof captureSnapshot, 'function');

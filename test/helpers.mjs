@@ -1,10 +1,10 @@
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, realpath } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, relative, isAbsolute, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 export async function createRepo(files = {}) {
-  const dir = await mkdtemp(join(tmpdir(), 'repoproof-tests-'));
+  const dir = await realpath(await mkdtemp(join(tmpdir(), 'repoproof-tests-')));
   const target = (name) => {
     const path = resolve(dir, name);
     const rel = relative(dir, path);

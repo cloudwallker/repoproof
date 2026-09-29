@@ -22,12 +22,12 @@ export function redactText(text: string, repoRoot?: string): string {
   result = replacePath(result, homedir(), '<home>');
   result = result
     .replace(/-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----[\s\S]*?(?:-----END (?:[A-Z0-9]+ )*PRIVATE KEY-----|$)/g, MASK)
-    .replace(/([a-z][a-z0-9+.-]*:\/\/)[^\s/@]+(?::[^\s/@]*)?@/gi, '$1' + MASK + '@')
+    .replace(/(?<![a-z0-9+.-])([0-9+.-]*[a-z][a-z0-9+.-]*:\/\/)[^\s/@]+@/gi, '$1' + MASK + '@')
     .replace(/\bBearer\s+[^\s"'`,;]+/gi, 'Bearer ' + MASK)
     .replace(/\b(?:gh[pousr]_|github_pat_|sk-(?:proj-|svcacct-)?|xox[baprs]-|AIza|AKIA|ASIA)[A-Za-z0-9_-]+/g, MASK)
-    .replace(new RegExp('(["\']?(?:[A-Za-z0-9_]+[-_])?' + SECRET_NAME + '["\']?\\s*[:=]\\s*)(?:"[^"\\r\\n]*"?|\'[^\'\\r\\n]*\'?|[^\\s,;}]+)', 'gi'), '$1' + MASK)
+    .replace(new RegExp('(?<![A-Za-z0-9_-])(["\']?[A-Za-z0-9_-]*' + SECRET_NAME + '["\']?\\s*[:=]\\s*)(?:"[^"\\r\\n]*"?|\'[^\'\\r\\n]*\'?|[^\\s,;}]+)', 'gi'), '$1' + MASK)
     .replace(new RegExp('(--?' + SECRET_FLAG + '\\s+)(?:"[^"\\r\\n]*"?|\'[^\'\\r\\n]*\'?|[^\\s,;}]+)', 'gi'), '$1' + MASK)
-    .replace(/\b[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9.-]*[A-Z0-9])?\.[A-Z]{2,}\b/gi, '<email>')
+    .replace(/(?<![A-Z0-9.!#$%&'*+/=?^_`{|}~-])[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9.-]*[A-Z0-9])?\.[A-Z]{2,}\b/gi, '<email>')
     .replace(/\b[A-Za-z]:[\\/]Users[\\/][^\\/\s"'<>]+/gi, '<home>')
     .replace(/\/(?:home|Users)\/[^/\s"'<>]+/g, '<home>');
   return result;
