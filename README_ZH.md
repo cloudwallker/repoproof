@@ -12,6 +12,8 @@
 
 *基于项目演示的流程示意图，并非运行截图。核验只比较快照，不会重新执行收据中的命令。*
 
+![repoproof](docs/images/cartoon-infographic.png)
+
 ## 功能
 
 - 为明确指定的命令记录执行结果与执行前后的 Git 文件快照。

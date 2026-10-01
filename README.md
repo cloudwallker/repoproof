@@ -12,6 +12,8 @@ English | [中文](README_ZH.md)
 
 *Workflow illustration based on the included demo, not a runtime screenshot. Verification compares snapshots without rerunning the recorded command.*
 
+![repoproof](docs/images/cartoon-infographic.png)
+
 ## Features
 
 - Record explicit commands with their results and before/after Git file snapshots.
