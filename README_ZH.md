@@ -10,7 +10,7 @@
 
 ![记录通过的检查，修改已跟踪文件，再核验：历史结果仍是 passed，当前快照状态变为 changed](docs/images/repoproof-flow.svg)
 
-*基于项目演示的流程示意图，并非运行截图。核验只比较快照，不会重新执行收据中的命令。*
+*基于项目演示的流程示意图：核验对照记录中的 Git 文件快照与当前快照。*
 
 ![repoproof](docs/images/cartoon-infographic.png)
 
@@ -45,7 +45,7 @@ npm install --prefix ./tools --offline --ignore-scripts ./repoproof-0.1.0.tgz
 node ./tools/node_modules/repoproof/bin/repoproof.mjs --help
 ```
 
-`npm pack` 的 `prepack` 步骤会构建 JavaScript。换一个目录安装时，使用实际生成文件的路径；包内不要求 TypeScript 编译器。这里说明的是本地打包流程，不承诺已有可下载的 Release 附件。
+`npm pack` 的 `prepack` 步骤会构建 JavaScript。换一个目录安装时，使用实际生成文件的路径；包内包含构建后的 JavaScript，可按上述本地打包流程安装。
 
 在已有 Git 项目的目录中，通过实际路径调用构建好的 CLI：
 

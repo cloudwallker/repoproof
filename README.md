@@ -10,7 +10,7 @@ English | [中文](README_ZH.md)
 
 ![Record a passing check, change a tracked file, and verify: historical execution stays passed while current freshness becomes changed](docs/images/repoproof-flow.svg)
 
-*Workflow illustration based on the included demo, not a runtime screenshot. Verification compares snapshots without rerunning the recorded command.*
+*Workflow illustration based on the included demo: verification compares recorded and current Git file snapshots.*
 
 ![repoproof](docs/images/cartoon-infographic.png)
 
@@ -45,7 +45,7 @@ npm install --prefix ./tools --offline --ignore-scripts ./repoproof-0.1.0.tgz
 node ./tools/node_modules/repoproof/bin/repoproof.mjs --help
 ```
 
-Run `npm pack` in the RepoProof source directory; its `prepack` hook builds the JavaScript. Use the resulting file's actual path when installing elsewhere. The package needs no TypeScript compiler. This repository documents local packaging and does not promise a downloadable Release asset.
+Run `npm pack` in the RepoProof source directory; its `prepack` hook builds the JavaScript. Use the resulting file's actual path when installing elsewhere. The package contains the built JavaScript and can be installed through the local packaging workflow above.
 
 Inside an existing Git project, invoke the built CLI through its actual path:
 
