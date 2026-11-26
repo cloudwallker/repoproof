@@ -14,6 +14,8 @@
 
 相对输入文件路径按调用目录解析；默认数据始终位于 `--cwd` 所属 Git 根目录。输出路径必须在项目内，已有文件不覆盖。需要更新同名简报时可明确使用 shell 重定向，或选择新输出文件名。
 
+Markdown 默认包含全部历史记录。用 `brief --history N` 限制历史条数，设为 0 可省略详情。`brief --json` 默认沿用原有字段；指定 `--history N` 后新增 `history.total` 和 `history.records`。记录按 UTC 完成时间降序排列，每条含 `receiptId` 和 `finishedAt`。无法读取完成时间的记录排在末尾，时间为 `null`。这个选项只影响展示，失效或损坏的收据仍按原规则影响检查结果和退出码。JSON 简报的 `limitations` 使用 `--lang` 指定的语言。
+
 首版不提供任意依赖推断、远端状态验证或跨会话自动总结。子模块和不可读路径会显示无法核验；查看 reasons 再决定下一步。
 
 `.repoproof/` 固定排除指当前仓库的根目录；像 `fixtures/.repoproof/example.txt` 这样的已跟踪示例文件仍在检查范围。跨平台收据可以保存 POSIX 文件名；Windows 无法安全解释其中的冒号或反斜杠名称时，核验显示无法核验。

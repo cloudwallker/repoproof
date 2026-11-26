@@ -2,7 +2,7 @@
 
 ### Local Git check receipts for coding handoffs
 
-**Record command results against Git file snapshots, then see when code changes make that evidence stale. Historical execution results stay separate from the current file state.**
+**Record command results against Git file snapshots, see when code changes make that evidence stale, and share the latest checks in a handoff brief.**
 
 English | [中文](README_ZH.md)
 
@@ -63,6 +63,8 @@ Replace `<RepoProof-directory>` with the directory you cloned, quoting paths tha
 After a recorded test succeeds, edit a tracked source file and run `verify` again. The historical result stays `passed`; freshness becomes `changed` and includes the changed paths. A handoff brief now marks the associated declared-done task as needing a recheck.
 
 The brief distinguishes work with recorded checks, self-reported completion, rechecks, remaining work, and blockers. A `done` declaration alone is never execution evidence.
+
+For a short handoff, use `repoproof brief --lang en --history 3` to show the three most recent receipts with their UTC finish times. Add `--json` to include the same history in a machine-readable brief. The limit applies only to the history section. All checks still contribute to task status and the exit code.
 
 ## Commands
 

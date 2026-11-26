@@ -11,6 +11,7 @@ interface BriefData {
   schemaVersion: 1; goal: string;
   tasks: { id: string; title: string; declaredStatus: string; status: TaskStatus; note?: string; checks: CheckSummary[] }[];
   checks: CheckSummary[]; limitations: string[];
+  history?: { total: number; records: (CheckSummary & { finishedAt: string | null })[] };
 }
 
 const limitations = {
@@ -49,7 +50,7 @@ function summary(id: string, title: string, entry?: Entry, verificationOnly = fa
   return { id, title, execution: value.execution, freshness: value.freshness, receiptId: value.receiptId || null, reasons: [...value.reasons], changes: value.changes.map(change => ({ ...change })), scope };
 }
 
-export function briefData(manifest: TaskManifest, entries: Entry[]): BriefData {
+export function briefData(manifest: TaskManifest, entries: Entry[], lang: 'zh' | 'en' = 'zh', historyLimit?: number): BriefData {
   const grouped = new Map<string, Entry[]>();
   for (const entry of entries) {
     const id = entry.verification.checkId;
@@ -74,7 +75,19 @@ export function briefData(manifest: TaskManifest, entries: Entry[]): BriefData {
     const selected = select(group);
     for (const entry of group) if (entry !== selected && entry.verification.freshness === 'invalid') checks.push(summary(id, byId.get(id)?.title ?? id, entry));
   }
-  return { schemaVersion: 1, goal: manifest.goal, tasks, checks, limitations: [...limitations.zh] };
+  const data: BriefData = { schemaVersion: 1, goal: manifest.goal, tasks, checks, limitations: [...limitations[lang]] };
+  if (historyLimit !== undefined) {
+    // Valid receipts use canonical UTC timestamps. For ties, match select's later-entry preference.
+    const ordered = entries.toReversed().sort((a, b) => (b.receipt?.finishedAt ?? '').localeCompare(a.receipt?.finishedAt ?? ''));
+    data.history = {
+      total: entries.length,
+      records: ordered.slice(0, historyLimit).map(entry => {
+        const id = entry.verification.checkId;
+        return { ...summary(id, byId.get(id)?.title ?? id, entry), finishedAt: entry.receipt?.finishedAt ?? null };
+      }),
+    };
+  }
+  return data;
 }
 
 function escape(value: string): string {
@@ -119,8 +132,11 @@ export function renderVerification(results: Verification[], lang: 'zh' | 'en' = 
   return lines.join('\n');
 }
 
-export function renderBrief(manifest: TaskManifest, entries: Entry[], lang: 'zh' | 'en' = 'zh'): string {
-  const data = briefData(manifest, entries);
+export function renderBrief(manifest: TaskManifest, entries: Entry[], lang: 'zh' | 'en' = 'zh', historyLimit = entries.length): string {
+  return renderBriefData(briefData(manifest, entries, lang, historyLimit), lang);
+}
+
+export function renderBriefData(data: BriefData, lang: 'zh' | 'en'): string {
   const zh = lang === 'zh';
   const statuses: Record<TaskStatus, string> = zh ? {
     evidenced_done: '完成且有执行记录', self_reported_done: '自述完成', needs_recheck: '需要重验', todo: '未完成', blocked: '阻塞',
@@ -137,9 +153,16 @@ export function renderBrief(manifest: TaskManifest, entries: Entry[], lang: 'zh'
   }
   lines.push(`## ${zh ? '全部检查（含未绑定检查）' : 'All checks (including unbound checks)'}`, '');
   for (const check of data.checks) lines.push(...checkLines(check, lang), '');
-  lines.push(`## ${zh ? '历史执行记录' : 'Historical execution records'}`, '');
-  for (const entry of entries) lines.push(...checkLines(summary(entry.verification.checkId, entry.verification.checkId, entry), lang), '');
-  if (!entries.length) lines.push(zh ? '没有执行记录。' : 'No execution records.', '');
+  if (data.history) {
+    const { total, records } = data.history;
+    lines.push(`## ${zh ? '历史执行记录' : 'Historical execution records'}`, '');
+    if (!total) lines.push(zh ? '没有执行记录。' : 'No execution records.', '');
+    else if (records.length < total) lines.push(zh ? `显示 ${records.length} 条，共 ${total} 条。` : `Showing ${records.length} of ${total} records.`, '');
+    for (const record of records) {
+      const time = record.finishedAt ? escape(record.finishedAt) : (zh ? '未知' : 'unknown');
+      lines.push(...checkLines(record, lang), `  - ${zh ? '完成时间 (UTC)' : 'Finished (UTC)'}: ${time}`, '');
+    }
+  }
   lines.push(...boundaries(lang), '', `## ${zh ? '下一步建议' : 'Next steps'}`, '');
   if (data.tasks.some(task => task.status === 'needs_recheck') || data.checks.some(check => check.execution !== 'passed' || check.freshness !== 'unchanged')) {
     lines.push(zh ? '- 审查失败、缺失、变动与无效记录，确认检查范围后显式重新执行相关检查。' : '- Review failures, missing records, changes and invalid receipts; confirm scope and explicitly rerun the relevant checks.');
