@@ -120,6 +120,30 @@ test('failure timeout and missing program produce incomplete or failed receipts'
   assert.equal(json(timeout).receipt.execution.reason, 'timeout');
 });
 
+test('brief localizes JSON and can export just the most recent receipt', async () => {
+  const dir = await repo();
+  assert.equal(cli(['init', '--goal', 'handoff'], dir).status, 0);
+  assert.equal(cli(['run', '--check', 'lint', '--', process.execPath, '-e', 'process.exit(1)'], dir).status, 1);
+  const passed = cli(['run', '--check', 'tests', '--json', '--', process.execPath, '-e', 'process.exit(0)'], dir);
+  assert.equal(passed.status, 0, passed.stderr);
+  const receipt = json(passed).receipt;
+  const legacy = json(cli(['brief', '--lang', 'en', '--json'], dir));
+  assert.match(legacy.limitations[0], /historical/i);
+  assert.equal('history' in legacy, false);
+  const compact = cli(['brief', '--lang', 'en', '--json', '--history', '1'], dir);
+  assert.equal(compact.status, 1, compact.stderr);
+  const data = json(compact);
+  assert.equal(data.history.total, 2);
+  assert.deepEqual(data.history.records.map(row => [row.receiptId, row.finishedAt]), [[receipt.id, receipt.finishedAt]]);
+  assert.ok(data.checks.some(check => check.id === 'lint' && check.execution === 'failed'));
+  for (const bad of ['-1', '1.5', '9007199254740992']) assert.equal(cli(['brief', '--history', bad], dir).status, 2);
+  await writeFile(join(dir, '.repoproof', 'receipts', 'unreadable.json'), '{');
+  const hidden = cli(['brief', '--json', '--history', '0'], dir);
+  assert.equal(hidden.status, 2, hidden.stderr);
+  assert.deepEqual(json(hidden).history, { total: 3, records: [] });
+  assert.ok(json(hidden).checks.some(check => check.freshness === 'invalid'));
+});
+
 test('cwd supports invoking from a different directory', async () => {
   const dir = await repo();
   const result = cli(['run', '--cwd', dir, '--check', 'tests', '--json', '--', process.execPath, '-e', 'process.exit(0)']);

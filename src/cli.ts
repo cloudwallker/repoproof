@@ -9,7 +9,7 @@ const HELP = `RepoProof 0.1.0 — 本地检查收据与代码交接
   repoproof init --goal "项目目标" [--cwd 目录]
   repoproof run --check tests [--include 相对路径] [--timeout 毫秒] -- 程序 参数...
   repoproof verify [收据.json] [--cwd 目录] [--json]
-  repoproof brief [--task 清单.json] [--lang zh|en] [--json] [--output 相对文件]
+  repoproof brief [--task 清单.json] [--lang zh|en] [--history 最近记录数] [--json] [--output 相对文件]
   repoproof --help | --version
 
 run 也支持 --cwd、--json；默认超时 120000ms。run 仅执行 -- 后明确给出的命令。
@@ -25,7 +25,7 @@ class CliError extends Error {
 interface Options {
   action: string; cwd: string; check?: string; goal?: string; timeout: number;
   include: string[]; json: boolean; lang: 'zh' | 'en'; task?: string;
-  output?: string; positionals: string[]; command: string[];
+  output?: string; history?: number; positionals: string[]; command: string[];
 }
 
 function parse(args: string[]): Options {
@@ -38,7 +38,7 @@ function parse(args: string[]): Options {
     init: new Set(['--cwd', '--goal']),
     run: new Set(['--cwd', '--check', '--timeout', '--include', '--json']),
     verify: new Set(['--cwd', '--json']),
-    brief: new Set(['--cwd', '--task', '--lang', '--json', '--output']),
+    brief: new Set(['--cwd', '--task', '--lang', '--history', '--json', '--output']),
   };
   if (!allowed[action]) throw new CliError('未知命令。运行 repoproof --help 查看用法。');
   const options: Options = { action, cwd: process.cwd(), timeout: 120000, include: [], json: false, lang: 'zh', positionals: [], command: [] };
@@ -62,6 +62,10 @@ function parse(args: string[]): Options {
     if (arg === '--check') options.check = value;
     if (arg === '--task') options.task = value;
     if (arg === '--output') options.output = value;
+    if (arg === '--history') {
+      if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value))) throw new CliError('--history 需要非负整数。');
+      options.history = Number(value);
+    }
     if (arg === '--include') options.include.push(value);
     if (arg === '--timeout') {
       if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)) || Number(value) < 1 || Number(value) > 86400000) {
@@ -189,7 +193,7 @@ export async function main(args: string[]): Promise<number> {
     }
     const entries = await entriesFor(root, options.positionals[0]);
     const results = entries.map(entry => entry.verification);
-    const { renderVerification, renderBrief, briefData } = await import('./report.ts');
+    const { renderVerification, renderBriefData, briefData } = await import('./report.ts');
     if (options.action === 'verify') {
       process.stdout.write(options.json ? JSON.stringify(results, null, 2) + '\n' : renderVerification(results, options.lang) + '\n');
       return statusCode(results);
@@ -197,8 +201,9 @@ export async function main(args: string[]): Promise<number> {
     const { loadManifest } = await import('./manifest.ts');
     const taskPath = options.task ? resolve(options.task) : await projectPath(root, '.repoproof/task.json');
     const manifest = await loadManifest(taskPath);
-    const data = briefData(manifest, entries);
-    const content = options.json ? JSON.stringify(data, null, 2) + '\n' : renderBrief(manifest, entries, options.lang) + '\n';
+    const historyLimit = options.history ?? (options.json ? undefined : entries.length);
+    const data = briefData(manifest, entries, options.lang, historyLimit);
+    const content = options.json ? JSON.stringify(data, null, 2) + '\n' : renderBriefData(data, options.lang) + '\n';
     if (options.output) {
       if (relative(root, resolve(root, options.output)).split(sep).slice(0, 2).join('/').toLowerCase() === '.repoproof/receipts') throw new CliError('简报不能写入收据目录。');
       const target = await projectPath(root, options.output, true);

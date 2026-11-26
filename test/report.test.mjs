@@ -100,6 +100,26 @@ test('Chinese and English reports explain historical execution and evidence limi
   for (const text of ['a-1', 'b-1', 'passed', 'failed', 'unchanged', 'changed']) assert.ok(verification.includes(text));
 });
 
+test('handoff history is newest first and limits leave current checks intact', () => {
+  const task = manifest([['ready', 'done', ['a']]], ['a']);
+  const old = entry('a', 'failed', 'unchanged', 1), recent = entry('a', 'passed', 'unchanged', 2);
+  const tied = entry('b', 'failed', 'unchanged', 2);
+  const undated = { receipt: null, verification: { ...entry('bad').verification, freshness: 'invalid' } };
+  const entries = [undated, old, recent, tied];
+  const all = api('briefData')(task, entries, 'en', 10);
+  assert.deepEqual(all.history.records.map(row => row.receiptId), ['b-2', 'a-2', 'a-1', 'bad-1']);
+  assert.deepEqual(all.history.records.map(row => row.finishedAt), [tied.receipt.finishedAt, recent.receipt.finishedAt, old.receipt.finishedAt, null]);
+  assert.match(all.limitations[0], /historical/i);
+  const short = api('briefData')(task, entries, 'en', 0);
+  assert.deepEqual(short.history, { total: 4, records: [] });
+  assert.deepEqual(short.checks, all.checks);
+  assert.deepEqual(short.tasks, all.tasks);
+  const markdown = api('renderBrief')(task, entries, 'en', 1).split('## Historical execution records')[1].split('## Evidence limits')[0];
+  assert.match(markdown, /b-2/);
+  assert.doesNotMatch(markdown, /a-2|a-1/);
+  assert.match(markdown, /1 of 4/);
+});
+
 test('Markdown renders untrusted strings as text while JSON preserves originals', () => {
   const unsafe = 'line\n# FORGED | `code` [link](https://evil.test) <script>&x';
   const m = manifest([['done', 'done', ['a']]]); m.goal = unsafe; m.tasks[0].title = unsafe; m.tasks[0].note = unsafe; m.checks[0].title = unsafe;
